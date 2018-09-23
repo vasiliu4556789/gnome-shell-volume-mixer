@@ -40,7 +40,7 @@ var Mixer = new Lang.Class({
         this._hotkeys = new Hotkeys.Hotkeys(this._settings);
 
         this.volumeStep = this._settings.get_int('volume-step');
-        this.boostVolume = this._settings.get_boolean('use-volume-boost');
+        this.boostVolume = true; //XXX
 
         this._control = Volume.getMixerControl();
         this._state = this._control.get_state();
@@ -56,10 +56,12 @@ var Mixer = new Lang.Class({
 
         this._bindProfileHotkey();
 
+        /* XXX should we keep this? it never really worked anyway
         if (this.boostVolume
                 || this.volumeStep != Settings.VOLUME_STEP_DEFAULT) {
             this._bindMediaKeys();
         }
+        */
 
         this._onStateChanged(this._control, this._state);
     },
@@ -123,6 +125,7 @@ var Mixer = new Lang.Class({
 
         this._defaultSink.change_is_muted(muted);
 
+        /* //XXX part of keybindings. remove or keep?
         if (!muted) {
             let volume = this._defaultSink.volume;
             let max = this.getVolMax();
@@ -130,6 +133,7 @@ var Mixer = new Lang.Class({
             level = Math.round(volume / max * 100);
             percent = Math.round(volume / virtMax * 100);
         }
+        */
 
         this._showVolumeOsd(level, percent);
     },
@@ -196,27 +200,11 @@ var Mixer = new Lang.Class({
      * Returns the max volume, depending on boost being enabled.
      */
     getVolMax() {
+        //XXX
         return this.boostVolume
-                ? this._control.get_vol_max_amplified()
-                : this._control.get_vol_max_norm();
+            ? this._control.get_vol_max_amplified()
+            : this._control.get_vol_max_norm();
     },
-
-    /**
-     * Returns the amount of a step on a (slider) scale from 0 to 1.
-     */
-    getNormalizedStep() {
-        if (!this.boostVolume) {
-            return this.volumeStep;
-        }
-
-        let norm = this._control.get_vol_max_norm();
-        let ampl = this._control.get_vol_max_amplified();
-
-        let step = norm / ampl * this.volumeStep;
-        step = Math.round(step * 100) / 100;
-        return step;
-    },
-
 
     /**
      * Adds a card to our array of cards.
@@ -464,8 +452,8 @@ var Mixer = new Lang.Class({
      * Tries to find out whether a certain stream matches profile for a card.
      */
     _streamMatchesProfile(streamName, cardName, profileName) {
-        let [streamAlsa, streamAddr, streamIndex, streamProfile] = streamName.split('.');
-        let [cardAlsa, cardAddr, cardIndex] = cardName.split('.');
+        let [, streamAddr, streamIndex, streamProfile] = streamName.split('.');
+        let [, cardAddr, cardIndex] = cardName.split('.');
 
         profileName = profileName.split(':');
         // remove direction

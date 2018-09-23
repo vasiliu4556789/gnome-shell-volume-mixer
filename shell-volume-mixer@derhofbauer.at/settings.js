@@ -75,9 +75,10 @@ var Settings = new Lang.Class({
             // try to find the app-schema locally
             if (GLib.file_test(schemaDir + '/gschemas.compiled', GLib.FileTest.EXISTS)) {
                 let schemaSource = Gio.SettingsSchemaSource.new_from_directory(
-                        schemaDir,
-                        Gio.SettingsSchemaSource.get_default(),
-                        false);
+                    schemaDir,
+                    Gio.SettingsSchemaSource.get_default(),
+                    false
+                );
 
                 instance = new Gio.Settings({
                     settings_schema: schemaSource.lookup(this.schema, false)
@@ -123,9 +124,10 @@ var Settings = new Lang.Class({
         // already connected
         if (this._signals && this._signals[signal]) {
             Utils.error(
-                    'settings',
-                    'connect',
-                    'Signal "' + signal + '" already bound for "' + this.schema + '"');
+                'settings',
+                'connect',
+                'Signal "' + signal + '" already bound for "' + this.schema + '"'
+            );
             return false;
         }
 

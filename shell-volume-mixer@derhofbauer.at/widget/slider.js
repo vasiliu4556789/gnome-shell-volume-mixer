@@ -11,7 +11,6 @@
 const Clutter = imports.gi.Clutter;
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Lang = imports.lang;
-const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
 
 const Settings = Extension.imports.settings;
@@ -27,35 +26,6 @@ var VolumeSlider = new Lang.Class({
     _init(value, step) {
         this._step = step || Settings.VOLUME_STEP_DEFAULT;
         this.parent(value);
-    },
-
-    scroll(event) {
-        if (event.is_pointer_emulated()) {
-            return Clutter.EVENT_PROPAGATE;
-        }
-
-        let direction = 'up';
-        let scrollDir = event.get_scroll_direction();
-
-        if (scrollDir == Clutter.ScrollDirection.SMOOTH) {
-            let [dx, dy] = event.get_scroll_delta();
-            if (dy > 0) {
-                direction = 'down';
-            } else if (dy == 0) {
-                // bugfix first dy event being zero
-                direction = false;
-            }
-        } else if (scrollDir == Clutter.ScrollDirection.DOWN) {
-            direction = 'down';
-        }
-
-        if (direction) {
-            this._value = this._calcNewValue(direction);
-        }
-
-        this.actor.queue_repaint();
-        this.emit('value-changed', this._value, event);
-        return Clutter.EVENT_STOP;
     },
 
     onKeyPressEvent(actor, event) {

@@ -92,9 +92,7 @@ function addPanelButton(position) {
         volumeIcon.hide();
     }
 
-    menu = new PanelButton(mixer, {
-        separator: false
-    });
+    menu = new PanelButton(mixer);
 
     if (position === Settings.POS_LEFT) {
         Main.panel.addToStatusArea('ShellvolumeActor', menu, 999, 'left');

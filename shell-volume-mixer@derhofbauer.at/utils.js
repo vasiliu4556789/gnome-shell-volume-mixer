@@ -6,7 +6,7 @@
  * @author Alexander Hofbauer <alex@derhofbauer.at>
  */
 
-/* exported getCards, l, d, error, repeatString, getExtensionPath, versionGreaterOrEqual */
+/* exported getCards, l, d, info, error, repeatString, getExtensionPath, versionGreaterOrEqual */
 
 const ByteArray = imports.byteArray;
 const Config = imports.misc.config;

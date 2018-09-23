@@ -148,7 +148,7 @@ const Preferences = new Lang.Class({
                 }
 
                 this._devices.set(this._devices.append(row), [0, 1, 2],
-                        [profiletext, card.name, profile.name]);
+                    [profiletext, card.name, profile.name]);
 
                 profiles[profile.name] = {
                     description: profile.description,
@@ -428,7 +428,7 @@ const Preferences = new Lang.Class({
         profile.pinned = true;
 
         this._pinned.set(this._pinned.append(), [0, 1, 2, 3, 4, 5],
-                [card.description, profile.description, true, true, cardid, profileid]);
+            [card.description, profile.description, true, true, cardid, profileid]);
         this._storePinned();
     },
 
@@ -457,8 +457,8 @@ const Preferences = new Lang.Class({
             return;
         }
 
-        cardidSel = store.get_value(iter, 1);
-        profileidSel = store.get_value(iter, 2);
+        let cardidSel = store.get_value(iter, 1);
+        let profileidSel = store.get_value(iter, 2);
 
         if (cardid == cardidSel && profileid == profileidSel) {
             this._objects.btnAddDevice.set_sensitive(true);

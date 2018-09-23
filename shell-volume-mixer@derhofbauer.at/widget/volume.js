@@ -6,13 +6,12 @@
  * @author Alexander Hofbauer <alex@derhofbauer.at>
  */
 
-/* exported MasterSlider, OutputSlider, EventsSlider, InputSlider, InputStreamSlider, VolumeMenu */
+/* exported MasterSlider, AggregatedInput, OutputSlider, EventsSlider, InputSlider, InputStreamSlider, VolumeMenu */
 
 const Clutter = imports.gi.Clutter;
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
-const Main = imports.ui.main;
 const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
@@ -23,7 +22,6 @@ const FloatingLabel = Extension.imports.widget.floatingLabel.FloatingLabel;
 const MenuItem = Extension.imports.widget.menuItem;
 const Settings = Extension.imports.settings;
 const Slider = Extension.imports.widget.slider;
-const Utils = Extension.imports.utils;
 
 
 /**
@@ -61,7 +59,7 @@ const StreamSlider = new Lang.Class({
         }
 
         if (!this._slider) {
-            this._slider = new Slider.VolumeSlider(0, this._mixer.getNormalizedStep());
+            this._slider = new Slider.VolumeSlider(0, this._mixer.volumeStep);
             this.item.secondLine.add(this._slider.actor, { expand: true });
         }
 
@@ -81,6 +79,11 @@ const StreamSlider = new Lang.Class({
         if (this._slider._onScrollEvent) {
             this.item.actor.connect('scroll-event', this._slider._onScrollEvent.bind(this._slider));
         }
+
+        let soundSettings = new Settings.Settings(Settings.SOUND_SETTINGS_SCHEMA);
+        this._soundSettings = soundSettings.settings;
+        this._soundSettings.connect('changed::' + Settings.ALLOW_AMPLIFIED_VOLUME_KEY, this._amplifySettingsChanged.bind(this));
+        this._amplifySettingsChanged();
 
         this.stream = options.stream || null;
     },
@@ -122,28 +125,14 @@ const StreamSlider = new Lang.Class({
     },
 
     _sliderChanged(slider, value, event) {
-        if (!this._stream) {
+        this.parent(slider, value, event);
+
+        if (!this._stream || !this._volumeInfo) {
             return;
         }
 
-        let max = this._mixer.getVolMax();
-        let newVol = max * value;
-        this._mixer.setStreamVolume(this._stream, newVol);
-
-        if (!this._volumeInfo) {
-            return;
-        }
-
-        let percent = Math.round(newVol / this._control.get_vol_max_norm() * 100);
-        this._showVolumeInfo(percent, event);
-    },
-
-    _updateVolume() {
-        let muted = this._stream.is_muted;
-        let max = this._mixer.getVolMax();
-
-        this._slider.setValue(muted ? 0 : (this._stream.volume / max));
-        this.emit('stream-updated');
+        // value is already a proportion of the probably boosted slider
+        this._showVolumeInfo(Math.round(value * 100), event);
     },
 
     _showVolumeInfo(value, event) {
@@ -161,7 +150,7 @@ const StreamSlider = new Lang.Class({
 
             if (event && 'showInfoAtMouseCursor' in event && event.showInfoAtMouseCursor === true) {
                 [x, y] = event.get_coords();
-                let [w, h] = this._volumeInfo.size;
+                let [, h] = this._volumeInfo.size;
                 x += 15;
                 y += h + 10;
             } else {
@@ -201,7 +190,7 @@ var MasterSlider = new Lang.Class({
     Extends: StreamSlider,
 
     _init(control, options) {
-        this.item = new MenuItem.MasterMenuItem(options.mixer.getNormalizedStep());
+        this.item = new MenuItem.MasterMenuItem(options.mixer.volumeStep);
 
         this._slider = this.item._slider;
         this._icon = this.item.icon;
@@ -233,14 +222,6 @@ var MasterSlider = new Lang.Class({
 
     _updateLabel() {
         this._label.text = this._stream.description;
-    },
-
-    /**
-     * Mouse scroll event triggered by scrolling over panel icon.
-     */
-    scroll(event) {
-        event.showInfoAtMouseCursor = !Main.panel.statusArea.aggregateMenu.menu.isOpen;
-        return this._slider.scroll(event);
     }
 });
 

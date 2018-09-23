@@ -6,16 +6,15 @@
  * @author Alexander Hofbauer <alex@derhofbauer.at>
  */
 
-/* exported Menu */
+/* exported Menu, Indicator */
 
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gvc = imports.gi.Gvc;
 const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
-const PanelMenu = imports.ui.panelMenu;
+const ShellVolume = imports.ui.status.volume;
 
 const Settings = Extension.imports.settings;
-const Slider = Extension.imports.widget.slider;
 const Volume = Extension.imports.widget.volume;
 const Utils = Extension.imports.utils;
 
@@ -258,17 +257,16 @@ var Menu = new Lang.Class({
  */
 var Indicator = new Lang.Class({
     Name: 'GvmIndicator',
-    Extends: PanelMenu.SystemIndicator,
+    Extends: ShellVolume.Indicator,
 
     _init(mixer, options) {
         options = options || {};
 
         this.parent();
 
-        this._primaryIndicator = this._addIndicator();
-
         this._control = mixer.control;
 
+        this._volumeMenu.destroy();
         this._volumeMenu = new Menu(mixer, options);
         this._volumeMenu.connect('icon-changed', this.updateIcon.bind(this));
 
@@ -288,9 +286,13 @@ var Indicator = new Lang.Class({
         }
     },
 
+    /* XXX custom window implementation done for now?
+   TODO parent shows osdWindowManager here
     _onScrollEvent(actor, event) {
-        return this._volumeMenu.scroll(event);
+        //return this._volumeMenu.scroll(event);
+        this.parent(actor, event); //XXX
     },
+    */
 
     destroy() {
         if (this.menu) {

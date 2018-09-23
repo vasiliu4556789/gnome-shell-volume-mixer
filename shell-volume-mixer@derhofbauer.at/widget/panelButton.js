@@ -22,7 +22,7 @@ var PanelButton = new Lang.Class({
     Name: 'ShellVolumeMixerPanelButton',
     Extends: PanelMenu.Button,
 
-    _init(mixer, options) {
+    _init(mixer) {
         this.parent(0.0, 'ShellVolumeMixer');
 
         this._mixerMenu = new Menu.Menu(mixer, {
@@ -42,7 +42,6 @@ var PanelButton = new Lang.Class({
         this._box.add(this._bin);
 
         this.actor.add_actor(this._box);
-        this.actor.connect('scroll-event', this._onScrollEvent.bind(this));
 
         this._mixerMenu.connect('icon-changed', this._onIconChanged.bind(this));
 
@@ -50,10 +49,6 @@ var PanelButton = new Lang.Class({
         this.menu.addMenuItem(this._mixerMenu);
 
         this._onIconChanged();
-    },
-
-    _onScrollEvent(actor, event) {
-        this._mixerMenu.scroll(event);
     },
 
     _onIconChanged() {
