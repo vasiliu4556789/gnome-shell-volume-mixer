@@ -9,11 +9,11 @@
 /* exported VolumeSlider */
 
 const Clutter = imports.gi.Clutter;
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Slider = imports.ui.slider;
 
-const Settings = Extension.imports.settings;
+const Settings = Lib.settings;
 
 
 /**

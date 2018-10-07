@@ -8,14 +8,14 @@
 
 /* exported init, buildPrefsWidget */
 
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gtk = imports.gi.Gtk;
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 
-const Gettext = Extension.imports.gettext;
-const Settings = Extension.imports.settings;
-const Utils = Extension.imports.utils;
-const __ = Extension.imports.gettext._;
+const Gettext = Lib.utils.gettext;
+const Settings = Lib.settings;
+const Utils = Lib.utils.utils;
+const __ = Lib.gettext._;
 
 let preferences;
 

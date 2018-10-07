@@ -9,19 +9,19 @@
 /* exported MasterSlider, AggregatedInput, OutputSlider, EventsSlider, InputSlider, InputStreamSlider, VolumeMenu */
 
 const Clutter = imports.gi.Clutter;
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Volume = imports.ui.status.volume;
 
-const __ = Extension.imports.gettext._;
-const FloatingLabel = Extension.imports.widget.floatingLabel.FloatingLabel;
-const MenuItem = Extension.imports.widget.menuItem;
-const Settings = Extension.imports.settings;
-const Slider = Extension.imports.widget.slider;
+const __ = Lib.utils.gettext._;
+const FloatingLabel = Lib.widget.floatingLabel.FloatingLabel;
+const MenuItem = Lib.widget.menuItem;
+const Settings = Lib.settings;
+const Slider = Lib.widget.slider;
 
 
 /**

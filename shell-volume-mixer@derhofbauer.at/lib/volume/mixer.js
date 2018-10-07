@@ -8,16 +8,16 @@
 
 /* exported Mixer */
 
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gio = imports.gi.Gio;
 const Gvc = imports.gi.Gvc;
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Main = imports.ui.main;
 const Volume = imports.ui.status.volume;
 
-const Hotkeys = Extension.imports.hotkeys;
-const Settings = Extension.imports.settings;
-const Utils = Extension.imports.utils;
+const Hotkeys = Lib.utils.hotkeys;
+const Settings = Lib.settings;
+const Utils = Lib.utils.utils;
 
 const signals = [];
 const STREAM_NO_MATCH = 0;

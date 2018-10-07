@@ -9,14 +9,14 @@
 
 /* exported init, enable, disable */
 
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 
-const Menu = Extension.imports.menu;
-const Mixer = Extension.imports.mixer;
-const PanelButton = Extension.imports.widget.panelButton.PanelButton;
-const Settings = Extension.imports.settings;
+const { Indicator } = Lib.menu.indicator;
+const { Mixer } = Lib.volume.mixer;
+const PanelButton = Lib.widget.panelButton.PanelButton;
+const Settings = Lib.settings;
 
 let settings;
 
@@ -45,7 +45,7 @@ function enable() {
         enable();
     });
 
-    mixer = new Mixer.Mixer();
+    mixer = new Mixer();
 
     let position = settings.get_enum('position');
 
@@ -57,7 +57,7 @@ function enable() {
 }
 
 function replaceOriginal() {
-    gvmIndicator = new Menu.Indicator(mixer, {
+    gvmIndicator = new Indicator(mixer, {
         separator: false
     });
 

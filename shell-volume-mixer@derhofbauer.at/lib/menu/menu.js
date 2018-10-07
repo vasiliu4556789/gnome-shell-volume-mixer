@@ -6,17 +6,16 @@
  * @author Alexander Hofbauer <alex@derhofbauer.at>
  */
 
-/* exported Menu, Indicator */
+/* exported Menu */
 
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gvc = imports.gi.Gvc;
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PopupMenu = imports.ui.popupMenu;
-const ShellVolume = imports.ui.status.volume;
 
-const Settings = Extension.imports.settings;
-const Volume = Extension.imports.widget.volume;
-const Utils = Extension.imports.utils;
+const { Settings } = Lib.settings;
+const Volume = Lib.widget.volume;
+const Utils = Lib.utils.utils;
 
 
 var Menu = new Lang.Class({
@@ -27,7 +26,7 @@ var Menu = new Lang.Class({
         // no this.parent(); shouldn't go through VolumeMenu's setup
         PopupMenu.PopupMenuSection.prototype._init.call(this);
 
-        this._settings = new Settings.Settings();
+        this._settings = new Settings();
 
         this.options = {
             detailed: this._settings.get_boolean('show-detailed-sliders'),
@@ -248,56 +247,6 @@ var Menu = new Lang.Class({
 
         } else if (id in this._inputs) {
             this._inputs[id].refresh();
-        }
-    }
-});
-
-/**
- * Customized indicator using our Menu.
- */
-var Indicator = new Lang.Class({
-    Name: 'GvmIndicator',
-    Extends: ShellVolume.Indicator,
-
-    _init(mixer, options) {
-        options = options || {};
-
-        this.parent();
-
-        this._control = mixer.control;
-
-        this._volumeMenu.destroy();
-        this._volumeMenu = new Menu(mixer, options);
-        this._volumeMenu.connect('icon-changed', this.updateIcon.bind(this));
-
-        this.menu.addMenuItem(this._volumeMenu);
-
-        this.indicators.connect('scroll-event', this._onScrollEvent.bind(this));
-    },
-
-    updateIcon() {
-        let icon = this._volumeMenu.getIcon();
-
-        if (icon != null) {
-            this.indicators.show();
-            this._primaryIndicator.icon_name = icon;
-        } else {
-            this.indicators.hide();
-        }
-    },
-
-    /* XXX custom window implementation done for now?
-   TODO parent shows osdWindowManager here
-    _onScrollEvent(actor, event) {
-        //return this._volumeMenu.scroll(event);
-        this.parent(actor, event); //XXX
-    },
-    */
-
-    destroy() {
-        if (this.menu) {
-            this.menu.destroy();
-            this.menu = null;
         }
     }
 });

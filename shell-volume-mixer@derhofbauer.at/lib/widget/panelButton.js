@@ -8,12 +8,13 @@
 
 /* exported PanelButton */
 
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PanelMenu = imports.ui.panelMenu;
 const St = imports.gi.St;
 
-const Menu = Extension.imports.menu;
+const { Menu } = Lib.menu.menu;
+
 
 /**
  * Stand-alone panel menu
@@ -25,7 +26,7 @@ var PanelButton = new Lang.Class({
     _init(mixer) {
         this.parent(0.0, 'ShellVolumeMixer');
 
-        this._mixerMenu = new Menu.Menu(mixer, {
+        this._mixerMenu = new Menu(mixer, {
             separator: true
         });
 

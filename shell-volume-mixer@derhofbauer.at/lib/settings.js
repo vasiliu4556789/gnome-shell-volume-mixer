@@ -14,8 +14,9 @@ const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
+const Lib = Extension.imports.lib;
 
-const Utils = Extension.imports.utils;
+const Utils = Lib.utils.utils;
 
 var POS_MENU = 0;
 var POS_LEFT = 1;

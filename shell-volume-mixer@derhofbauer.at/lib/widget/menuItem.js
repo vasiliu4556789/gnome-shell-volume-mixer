@@ -9,12 +9,12 @@
 /* exported MasterMenuItem, SubMenuItem */
 
 const Clutter = imports.gi.Clutter;
-const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Lang = imports.lang;
+const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 
-const Slider = Extension.imports.widget.slider;
+const Slider = Lib.widget.slider;
 
 
 let makeItemLine = function(ornament) {
