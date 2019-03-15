@@ -10,7 +10,7 @@ SOURCES = \
 	locale/*/*/*.mo \
 	pautils/cardinfo.py \
 	pautils/pa.py \
-	widget/*.js \
+	lib/*.js \
 	*.js \
 	metadata.json \
 	prefs.ui \
@@ -23,7 +23,9 @@ GSCHEMA = schemas/org.gnome.shell.extensions.shell-volume-mixer.gschema.xml
 SRCFILES = $(addprefix $(SRCDIR)/, $(SOURCES) $(GSCHEMA) $(GSCHEMA_COMP))
 
 
-dist: clean install-deps check $(PACKAGE)
+dist: clean install-deps check package
+
+package: $(PACKAGE)
 
 $(SRCDIR)/$(SCHEMA_COMP): $(SRCDIR)/$(GSCHEMA)
 	glib-compile-schemas --targetdir=$(SRCDIR)/schemas $(SRCDIR)/schemas
@@ -33,7 +35,7 @@ $(PACKAGE): $(SRCFILES) $(FILES)
 	zip $(PACKAGE) $(FILES)
 
 install-deps:
-	yarn install
+	npm install
 
 check: install-deps
 	node_modules/.bin/eslint $(SRCDIR)
