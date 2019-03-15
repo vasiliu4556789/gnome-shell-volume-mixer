@@ -9,7 +9,6 @@
 /* exported MasterMenuItem, SubMenuItem */
 
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
@@ -57,12 +56,10 @@ let prepareMenuItem = function(instance) {
 /**
  * Submenu item for the sink selection menu.
  */
-var MasterMenuItem = new Lang.Class({
-    Name: 'MasterMenuItem',
-    Extends: PopupMenu.PopupSubMenuMenuItem,
-
-    _init(sliderVolumeStep) {
-        this.parent('', true);
+var MasterMenuItem = class extends PopupMenu.PopupSubMenuMenuItem
+{
+    constructor(sliderVolumeStep) {
+        super('', true);
         prepareMenuItem(this);
 
         this._slider = new Slider.VolumeSlider(0, sliderVolumeStep);
@@ -76,14 +73,14 @@ var MasterMenuItem = new Lang.Class({
 
         this.label.add_style_class_name('svm-master-label');
         this.actor.add_style_class_name('svm-master-slider svm-menu-item');
-    },
+    }
 
     _onButtonReleaseEvent(actor, event) {
         if (event.get_button() == 2) {
             return Clutter.EVENT_STOP;
         }
-        return this.parent(actor, event);
-    },
+        return super._onButtonReleaseEvent(actor, event);
+    }
 
     /**
      * Change volume on left / right.
@@ -95,22 +92,20 @@ var MasterMenuItem = new Lang.Class({
             return this._slider.onKeyPressEvent(actor, event);
         }
 
-        return this.parent(actor, event);
+        return super._onKeyPressEvent(actor, event);
     }
-});
+};
 
 
 /**
  * Sub menu item implementation for dropdown menus (via master slider menu or input menu).
  */
-var SubMenuItem = new Lang.Class({
-    Name: 'OutputStreamSlider',
-    Extends: PopupMenu.PopupBaseMenuItem,
-
-    _init(params) {
-        this.parent(params);
+var SubMenuItem = class extends PopupMenu.PopupBaseMenuItem
+{
+    constructor(params) {
+        super(params);
         prepareMenuItem(this);
-    },
+    }
 
     addChildAt(child, pos) {
         let line = makeItemLine();
@@ -119,9 +114,9 @@ var SubMenuItem = new Lang.Class({
         this.container.insert_child_at_index(line, pos);
 
         return line;
-    },
+    }
 
     setSelected(selected) {
         this.setOrnament(selected === true ? PopupMenu.Ornament.DOT : PopupMenu.Ornament.NONE);
     }
-});
+};

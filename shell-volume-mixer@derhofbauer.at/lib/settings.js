@@ -13,7 +13,6 @@
 const Extension = imports.misc.extensionUtils.getCurrentExtension();
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const Lib = Extension.imports.lib;
 
 const Utils = Lib.utils.utils;
@@ -35,21 +34,20 @@ const SIGNALS = {};
 const GSETTINGS = {};
 
 
-var Settings = new Lang.Class({
-    Name: 'Settings',
-
+var Settings = class
+{
     set settings(value) {
         // nothing to do here
-    },
+    }
 
     get settings() {
         if (!GSETTINGS[this.schema]) {
             this._initSettings();
         }
         return GSETTINGS[this.schema];
-    },
+    }
 
-    _init(schema) {
+    constructor(schema) {
         this.schema = schema || SETTINGS_SCHEMA;
 
         if (!SIGNALS[this.schema]) {
@@ -57,7 +55,7 @@ var Settings = new Lang.Class({
         }
 
         this._signals = SIGNALS[this.schema];
-    },
+    }
 
     /**
      * Initializes a single instance of Gio.Settings for this extension.
@@ -96,7 +94,7 @@ var Settings = new Lang.Class({
         }
 
         GSETTINGS[this.schema] = instance;
-    },
+    }
 
     /**
      * Returns a Gio.Settings object for a schema.
@@ -112,7 +110,7 @@ var Settings = new Lang.Class({
         return new Gio.Settings({
             schema: schema
         });
-    },
+    }
 
 
     /**
@@ -135,7 +133,7 @@ var Settings = new Lang.Class({
         let id = this.settings.connect(signal, callback);
         this._signals[signal] = id;
         return id;
-    },
+    }
 
     /**
      * Registers a listener to changed events.
@@ -144,7 +142,7 @@ var Settings = new Lang.Class({
      */
     connectChanged(callback) {
         this.connect('changed::', callback);
-    },
+    }
 
     /**
      * Disconnects all connected signals.
@@ -153,7 +151,7 @@ var Settings = new Lang.Class({
         for (let signal in this._signals) {
             this.disconnect(this._signals[signal]);
         }
-    },
+    }
 
     /**
      * Disconnects a signal by name.
@@ -166,7 +164,7 @@ var Settings = new Lang.Class({
         }
 
         return false;
-    },
+    }
 
     /**
      * Disconnects a signal by id.
@@ -182,7 +180,7 @@ var Settings = new Lang.Class({
         }
 
         return false;
-    },
+    }
 
 
     /**
@@ -190,63 +188,63 @@ var Settings = new Lang.Class({
      */
     get_string(key) {
         return this.settings.get_string(key);
-    },
+    }
 
     /**
      * Sets the value of an 's' type key.
      */
     set_string(key, value) {
         return this.settings.set_string(key, value);
-    },
+    }
 
     /**
      * Retrieves the value of an 'i' type key.
      */
     get_int(key) {
         return this.settings.get_int(key);
-    },
+    }
 
     /**
      * Sets the value of an 'i' type key.
      */
     set_int(key, value) {
         return this.settings.set_int(key, value);
-    },
+    }
 
     /**
      * Retrieves the value of a 'b' type key.
      */
     get_boolean(key) {
         return this.settings.get_boolean(key);
-    },
+    }
 
     /**
      * Sets the value of a 'b' type key.
      */
     set_boolean(key, value) {
         return this.settings.set_boolean(key, value);
-    },
+    }
 
     /**
      * Retrieves the value of an enum key.
      */
     get_enum(key) {
         return this.settings.get_enum(key);
-    },
+    }
 
     /**
      * Sets the value of an enum key.
      */
     set_enum(key, value) {
         return this.settings.set_enum(key, value);
-    },
+    }
 
     /**
      * Retrieves the value of an array key.
      */
     get_array(key) {
         return this.settings.get_strv(key);
-    },
+    }
 
     /**
      * Sets the value of an array key.
@@ -254,7 +252,7 @@ var Settings = new Lang.Class({
     set_array(key, value) {
         return this.settings.set_strv(key, value);
     }
-});
+};
 
 /**
  * Disconnects all signals of all schemas.

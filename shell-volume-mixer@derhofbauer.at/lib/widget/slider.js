@@ -9,7 +9,6 @@
 /* exported VolumeSlider */
 
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Slider = imports.ui.slider;
 
@@ -19,14 +18,12 @@ const Settings = Lib.settings;
 /**
  * Slider with configurable steps.
  */
-var VolumeSlider = new Lang.Class({
-    Name: 'VolumeSlider',
-    Extends: Slider.Slider,
-
-    _init(value, step) {
+var VolumeSlider = class extends Slider.Slider
+{
+    constructor(value, step) {
+        super(value);
         this._step = step || Settings.VOLUME_STEP_DEFAULT;
-        this.parent(value);
-    },
+    }
 
     onKeyPressEvent(actor, event) {
         let key = event.get_key_symbol();
@@ -43,7 +40,7 @@ var VolumeSlider = new Lang.Class({
         }
 
         return Clutter.EVENT_PROPAGATE;
-    },
+    }
 
     _calcNewValue(direction) {
         let value = this._value;
@@ -56,7 +53,7 @@ var VolumeSlider = new Lang.Class({
         }
 
         return Math.min(Math.max(0, value), 1);
-    },
+    }
 
     /**
      * Allow middle button event to bubble up for mute / unmute.
@@ -65,6 +62,6 @@ var VolumeSlider = new Lang.Class({
         if (event.get_button() == 2) {
             return Clutter.EVENT_PROPAGATE;
         }
-        return this.parent(event);
+        return super.startDragging(event);
     }
-});
+};

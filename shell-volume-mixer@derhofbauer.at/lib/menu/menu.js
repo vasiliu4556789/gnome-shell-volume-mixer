@@ -9,7 +9,6 @@
 /* exported Menu */
 
 const Gvc = imports.gi.Gvc;
-const Lang = imports.lang;
 const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PopupMenu = imports.ui.popupMenu;
 
@@ -18,13 +17,15 @@ const Volume = Lib.widget.volume;
 const Utils = Lib.utils.utils;
 
 
-var Menu = new Lang.Class({
-    Name: 'ShellVolumeMixerMenu',
-    Extends: Volume.VolumeMenu,
-
-    _init(mixer, options) {
-        // no this.parent(); shouldn't go through VolumeMenu's setup
-        PopupMenu.PopupMenuSection.prototype._init.call(this);
+/**
+ * Special extension upon Volume.VolumeMenu.
+ *
+ * Needed because "actual" parent does all its setup in constructor().
+ */
+var Menu = class extends PopupMenu.PopupMenuSection
+{
+    constructor(mixer, options) {
+        super();
 
         this._settings = new Settings();
 
@@ -46,7 +47,24 @@ var Menu = new Lang.Class({
         this._mixer = mixer;
         this._control = mixer.control;
 
-        let signals = {
+
+        const mixins = [
+            'scroll',
+            '_readInput',
+            'getIcon',
+            'getLevel',
+            'getMaxLevel',
+        ];
+
+        for (let mixin of mixins) {
+            this[mixin] = Volume.VolumeMenu.prototype[mixin].bind(this);
+        }
+
+        this._init(mixer, options);
+    }
+
+    _init(mixer, options) {
+        const signals = {
             'state-changed': this._onControlStateChanged,
             'default-sink-changed': this._readOutput,
             'default-source-changed': this._readInput,
@@ -70,9 +88,9 @@ var Menu = new Lang.Class({
             symbolicIcons: this.options.symbolicIcons
         });
 
-        this._output.connect('stream-updated', function() {
+        this._output.connect('stream-updated', () => {
             this.emit('icon-changed');
-        }.bind(this));
+        });
 
 
         this._inputMenu = new Volume.AggregatedInput(this._control, {
@@ -99,12 +117,12 @@ var Menu = new Lang.Class({
         }
 
         this._onControlStateChanged();
-    },
+    }
 
     open(animate) {
         this._output.hideVolumeInfo();
-        this.parent(animate);
-    },
+        super.open(animate);
+    }
 
     close(animate) {
         for (let id in this._outputs) {
@@ -121,12 +139,12 @@ var Menu = new Lang.Class({
 
         this._output.hideVolumeInfo();
 
-        this.parent(animate);
-    },
+        super.close(animate);
+    }
 
     outputHasHeadphones() {
         return this._output._hasHeadphones;
-    },
+    }
 
     _addSeparator() {
         if (this._separator) {
@@ -135,10 +153,10 @@ var Menu = new Lang.Class({
 
         this._separator = new PopupMenu.PopupSeparatorMenuItem();
         this.addMenuItem(this._separator, 3);
-    },
+    }
 
     _onControlStateChanged() {
-        this.parent();
+        Volume.VolumeMenu._onControlStateChanged.call(this);
 
         if (this._control.get_state() != Gvc.MixerControlState.READY) {
             return;
@@ -148,10 +166,10 @@ var Menu = new Lang.Class({
         for (let stream of streams) {
             this._addStream(this._control, stream);
         }
-    },
+    }
 
     _readOutput() {
-        this.parent();
+        Volume.VolumeMenu._readOutput.call(this);
 
         if (!this._output.stream) {
             // safety check for failed setups
@@ -161,7 +179,7 @@ var Menu = new Lang.Class({
         for (let id in this._outputs) {
             this._outputs[id].setSelected(this._output.stream.id == id);
         }
-    },
+    }
 
     _addStream(control, stream) {
         if (stream.id in this._items
@@ -196,14 +214,14 @@ var Menu = new Lang.Class({
         } else if (stream instanceof Gvc.MixerSink) {
             this._addOutputStream(stream, control, options);
         }
-    },
+    }
 
     _addInputStream(stream, control, options) {
         let slider = new Volume.InputSlider(control, options);
 
         this._inputs[stream.id] = slider;
         this._inputMenu.addSlider(slider);
-    },
+    }
 
     _addOutputStream(stream, control, options) {
         let slider = new Volume.OutputSlider(control, options);
@@ -214,13 +232,13 @@ var Menu = new Lang.Class({
 
         this._outputs[stream.id] = slider;
         this._output.addSliderItem(slider.item);
-    },
+    }
 
 
     _streamAdded(control, id) {
         let stream = control.lookup_stream_id(id);
         this._addStream(control, stream);
-    },
+    }
 
     _streamRemoved(control, id) {
         if (id in this._items) {
@@ -236,7 +254,7 @@ var Menu = new Lang.Class({
             delete this._inputs[id];
             this._inputMenu.refresh();
         }
-    },
+    }
 
     _streamChanged(control, id) {
         if (id in this._items) {
@@ -249,4 +267,4 @@ var Menu = new Lang.Class({
             this._inputs[id].refresh();
         }
     }
-});
+};

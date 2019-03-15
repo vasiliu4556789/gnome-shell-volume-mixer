@@ -8,7 +8,6 @@
 
 /* exported PanelButton */
 
-const Lang = imports.lang;
 const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const PanelMenu = imports.ui.panelMenu;
 const St = imports.gi.St;
@@ -19,12 +18,10 @@ const { Menu } = Lib.menu.menu;
 /**
  * Stand-alone panel menu
  */
-var PanelButton = new Lang.Class({
-    Name: 'ShellVolumeMixerPanelButton',
-    Extends: PanelMenu.Button,
-
-    _init(mixer) {
-        this.parent(0.0, 'ShellVolumeMixer');
+var PanelButton = class extends PanelMenu.Button
+{
+    constructor(mixer) {
+        super(0.0, 'ShellVolumeMixer');
 
         this._mixerMenu = new Menu(mixer, {
             separator: true
@@ -50,7 +47,7 @@ var PanelButton = new Lang.Class({
         this.menu.addMenuItem(this._mixerMenu);
 
         this._onIconChanged();
-    },
+    }
 
     _onIconChanged() {
         if (this._mixerMenu.outputHasHeadphones()) {
@@ -58,9 +55,9 @@ var PanelButton = new Lang.Class({
         } else {
             this.setIcon(this._mixerMenu.getIcon());
         }
-    },
+    }
 
     setIcon(icon_name) {
         this._icon.icon_name = icon_name;
     }
-});
+};

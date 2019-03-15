@@ -15,7 +15,7 @@ const PopupMenu = imports.ui.popupMenu;
 
 const { Indicator } = Lib.menu.indicator;
 const { Mixer } = Lib.volume.mixer;
-const PanelButton = Lib.widget.panelButton.PanelButton;
+const { PanelButton } = Lib.widget.panelButton;
 const Settings = Lib.settings;
 
 let settings;

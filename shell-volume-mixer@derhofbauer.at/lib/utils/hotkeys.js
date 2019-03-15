@@ -8,21 +8,19 @@
 
 /* exported Hotkeys  */
 
-const Lang = imports.lang;
 const Main = imports.ui.main;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 
 const BINDINGS = {};
 
-var Hotkeys = new Lang.Class({
-    Name: 'Hotkeys',
-
-    _init(settings) {
+var Hotkeys = class
+{
+    constructor(settings) {
         this._settings = settings;
         this._bindings = BINDINGS;
         this._proxies = {};
-    },
+    }
 
     /**
      * Binds a hotkey using the local settings instance.
@@ -43,7 +41,7 @@ var Hotkeys = new Lang.Class({
         }
 
         return false;
-    },
+    }
 
     /**
      * Unbinds a hotkey.
@@ -62,7 +60,7 @@ var Hotkeys = new Lang.Class({
         }
 
         return true;
-    },
+    }
 
     /**
      * Binds a hotkey, proxying string changes from another settings object.
@@ -84,7 +82,7 @@ var Hotkeys = new Lang.Class({
         this._proxies[setting] = fromSettings;
 
         return true;
-    },
+    }
 
     /**
      * Unbinds all hotkeys.
@@ -93,7 +91,7 @@ var Hotkeys = new Lang.Class({
         for (let setting in this._bindings) {
             this.unbind(setting);
         }
-    },
+    }
 
 
     /**
@@ -111,4 +109,4 @@ var Hotkeys = new Lang.Class({
 
         this._settings.set_array(key, [value]);
     }
-});
+};

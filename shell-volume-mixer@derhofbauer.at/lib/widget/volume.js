@@ -10,7 +10,6 @@
 
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
-const Lang = imports.lang;
 const Lib = imports.misc.extensionUtils.getCurrentExtension().imports.lib;
 const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
@@ -18,7 +17,7 @@ const St = imports.gi.St;
 const Volume = imports.ui.status.volume;
 
 const __ = Lib.utils.gettext._;
-const FloatingLabel = Lib.widget.floatingLabel.FloatingLabel;
+const { FloatingLabel } = Lib.widget.floatingLabel;
 const MenuItem = Lib.widget.menuItem;
 const Settings = Lib.settings;
 const Slider = Lib.widget.slider;
@@ -30,15 +29,19 @@ const Slider = Lib.widget.slider;
  * We can extend (and monkey patch) Volume.OutputStreamSlider because
  * Volume.InputStreamSlider is meant for microphones only.
  */
-const StreamSlider = new Lang.Class({
-    Name: 'OutputStreamSlider',
-    Extends: Volume.OutputStreamSlider,
+const StreamSlider = class extends Volume.OutputStreamSlider
+{
+    constructor(control, options) {
+        super(control);
 
-    _init(control, options) {
         this.options = options || {};
         this._control = control;
         this._mixer = options.mixer;
 
+        this._init(options);
+    }
+
+    _init(options) {
         if (!this.item) {
             this.item = new MenuItem.SubMenuItem({ activate: false });
         }
@@ -86,11 +89,11 @@ const StreamSlider = new Lang.Class({
         this._amplifySettingsChanged();
 
         this.stream = options.stream || null;
-    },
+    }
 
     _onKeyPress(actor, event) {
         return this._slider.onKeyPressEvent(actor, event);
-    },
+    }
 
     _onButtonPress(actor, event) {
         if (event.get_button() == 2) {
@@ -98,34 +101,34 @@ const StreamSlider = new Lang.Class({
             return Clutter.EVENT_STOP;
         }
         return this._slider.startDragging(event);
-    },
+    }
 
     refresh() {
         this._updateLabel();
         this._updateSliderIcon();
-    },
+    }
 
     _updateSliderIcon() {
         if (this._stream && !this.options.symbolicIcons) {
             this._icon.gicon = this._stream.get_gicon();
         } else {
-            this.parent();
+            super._updateSliderIcon();
         }
 
         this.emit('stream-updated');
-    },
+    }
 
     _connectStream(stream) {
-        this.parent(stream);
+        super._connectStream(stream);
         this.refresh();
-    },
+    }
 
     _updateLabel() {
         this._label.text = this._stream.name || this._stream.description || '';
-    },
+    }
 
     _sliderChanged(slider, value, event) {
-        this.parent(slider, value, event);
+        super._sliderChanged(slider, value, event);
 
         if (!this._stream || !this._volumeInfo) {
             return;
@@ -133,7 +136,7 @@ const StreamSlider = new Lang.Class({
 
         // value is already a proportion of the probably boosted slider
         this._showVolumeInfo(Math.round(value * 100), event);
-    },
+    }
 
     _showVolumeInfo(value, event) {
         this._volumeInfo.text = value + '%';
@@ -167,7 +170,7 @@ const StreamSlider = new Lang.Class({
             this._volumeInfo.hide();
             return GLib.SOURCE_REMOVE;
         }.bind(this));
-    },
+    }
 
     hideVolumeInfo() {
         if (this._labelTimeoutId) {
@@ -178,37 +181,36 @@ const StreamSlider = new Lang.Class({
         this._infoShowing = false;
         this._volumeInfo.hide(false);
     }
-});
+};
 
 
 
 /**
  * Slider replacing the master volume slider.
  */
-var MasterSlider = new Lang.Class({
-    Name: 'MasterSlider',
-    Extends: StreamSlider,
-
-    _init(control, options) {
+var MasterSlider = class extends StreamSlider
+{
+    _init(options) {
         this.item = new MenuItem.MasterMenuItem(options.mixer.volumeStep);
 
         this._slider = this.item._slider;
         this._icon = this.item.icon;
         this._label = this.item.label;
 
-        this.parent(control, options);
         this._slider.actor.accessible_name = _('Volume');
 
         this.item.menu.addAction(_('Settings'), function () {
             Settings.openDialog();
         }.bind(this));
-    },
+
+        super._init(options);
+    }
 
     addSliderItem(item) {
         let pos = (this.item.menu._getMenuItems().length || 0) - 1;
 
         this.item.menu.addMenuItem(item, pos < 0 ? 0 : pos);
-    },
+    }
 
     /**
      * Override button click to allow for mute / unmute and menu to be opened.
@@ -218,32 +220,31 @@ var MasterSlider = new Lang.Class({
             this._stream.change_is_muted(!this._stream.is_muted);
         }
         return Clutter.EVENT_STOP;
-    },
+    }
 
     _updateLabel() {
         this._label.text = this._stream.description;
     }
-});
+};
 
 
 /**
  * Menu item for aggregated input streams.
  */
-var AggregatedInput = new Lang.Class({
-    Name: 'AggregatedInput',
-
-    _init() {
+var AggregatedInput = class
+{
+    constructor() {
         this.item = new PopupMenu.PopupSubMenuMenuItem(__('Inputs'), true);
         this.item.icon.icon_name = 'applications-multimedia-symbolic';
         this.item.actor.accessible_name = __('Inputs');
 
         this._inputStream = null;
-    },
+    }
 
     setInputStream(inputSlider) {
         this._inputStream = inputSlider;
         this.addSlider(inputSlider, 0);
-    },
+    }
 
     addSlider(slider, pos) {
         this.item.menu.addMenuItem(slider.item, pos || undefined);
@@ -251,7 +252,7 @@ var AggregatedInput = new Lang.Class({
         slider.connect('stream-updated', function () {
             this.refresh();
         }.bind(this));
-    },
+    }
 
     refresh() {
         let hasVisibleItems = (this.item.menu.numMenuItems > 1
@@ -260,36 +261,35 @@ var AggregatedInput = new Lang.Class({
 
         this.item.actor.visible = hasVisibleItems;
     }
-});
+};
 
 
 
 /**
  * Slider for output sinks (e.g. alsa devices, different profiles).
  */
-var OutputSlider = new Lang.Class({
-    Name: 'OutputSlider',
-    Extends: StreamSlider,
-
-    _init(control, options) {
+var OutputSlider = class extends StreamSlider
+{
+    _init(options) {
         if (options.detailed) {
             this._details = new St.Label({ text: '', style_class: 'svm-slider-details' });
         }
 
-        this.parent(control, options);
-
         if (options.detailed) {
             this.item.addChildAt(this._details, 1);
         }
-    },
+
+        super._init(options);
+    }
 
     _onButtonPress(actor, event) {
         if (event.get_button() == 1) {
             this._setAsDefault();
             return Clutter.EVENT_PROPAGATE;
         }
-        return this.parent(actor, event);
-    },
+
+        return super._onButtonPress(actor, event);
+    }
 
     _onKeyPress(actor, event) {
         let symbol = event.get_key_symbol();
@@ -298,8 +298,8 @@ var OutputSlider = new Lang.Class({
             return Clutter.EVENT_STOP;
         }
 
-        return this.parent(actor, event);
-    },
+        return super._onKeyPress(actor, event);
+    }
 
     _updateLabel() {
         let text = this._stream.description;
@@ -322,7 +322,7 @@ var OutputSlider = new Lang.Class({
 
             this._details.text = description;
         }
-    },
+    }
 
     setSelected(selected) {
         if (selected !== false) {
@@ -332,34 +332,30 @@ var OutputSlider = new Lang.Class({
             this.item.setSelected(false);
             this._label.remove_style_class_name('selected-stream');
         }
-    },
+    }
 
     _setAsDefault() {
         this._control.set_default_sink(this._stream);
     }
-});
+};
 
 
 /**
  * Slider for system sounds.
  */
-var EventsSlider = new Lang.Class({
-    Name: 'EventsSlider',
-    Extends: StreamSlider,
-
+var EventsSlider = class extends StreamSlider
+{
     _updateLabel() {
         this._label.text = this._stream.name;
     }
-});
+};
 
 
 /**
  * Slider for input sinks (e.g. media players).
  */
-var InputSlider = new Lang.Class({
-    Name: 'InputSlider',
-    Extends: StreamSlider,
-
+var InputSlider = class extends StreamSlider
+{
     _updateLabel() {
         let text = this._stream.name;
         let description = this._stream.description;
@@ -374,51 +370,50 @@ var InputSlider = new Lang.Class({
 
         this._label.text = text || '[' + __('unknown') + ']';
     }
-});
+};
 
 
 /**
  * Input stream slider (microphones, etc ?).
  */
-var InputStreamSlider = new Lang.Class({
-    Name: 'InputStreamSlider',
-    Extends: StreamSlider,
-
-    _init(control, options) {
-        this.parent(control, options);
-
+var InputStreamSlider = class extends StreamSlider
+{
+    _init(options) {
         this._slider.actor.accessible_name = _('Microphone');
         this._control.connect('stream-added', this._maybeShowInput.bind(this));
         this._control.connect('stream-removed', this._maybeShowInput.bind(this));
-    },
+
+        super._init(options);
+    }
 
     _connectStream(stream) {
-        this.parent(stream);
+        super._connectStream(stream);
         this._maybeShowInput();
-    },
+    }
 
     _maybeShowInput() {
         if (this.options.showAlways === true) {
             this._showInput = true;
             this._updateVisibility();
         } else {
+            // we extend from output stream slider impl, but this is an input stream slider
             Volume.InputStreamSlider.prototype._maybeShowInput.call(this);
         }
-    },
+    }
 
     isVisible() {
         return this._shouldBeVisible();
-    },
+    }
 
     _shouldBeVisible() {
         return Volume.InputStreamSlider.prototype._shouldBeVisible.call(this);
-    },
+    }
 
     _updateLabel() {
-        this.parent();
+        super._updateLabel();
 
         this._label.text = _('Microphone');
-    },
+    }
 
     _updateSliderIcon() {
         if (this._stream && !this.options.symbolicIcons) {
@@ -429,7 +424,7 @@ var InputStreamSlider = new Lang.Class({
 
         this.emit('stream-updated');
     }
-});
+};
 
 
 /**
